@@ -48,7 +48,7 @@ class Service:
             tls_key=secret["private_key"]
         )
 
-        options = CodeEngineV2.replace_secret(
+        options = self.ce_client.replace_secret(
             project_id=project_id,
             name=ce_secret_name,
             if_match="*",
@@ -63,6 +63,7 @@ class Service:
 @app.route("/", methods=["POST"])
 def handle_notification():
     logging.info("Received notification")
+    logging.info("Payload: %s", json.dumps(payload, indent=2)) ## Debugging line to log the payload
     payload = request.get_json()
 
     try:
