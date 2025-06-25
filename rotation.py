@@ -5,7 +5,6 @@ from flask import Flask, request, jsonify
 from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
 from ibm_secrets_manager_sdk.secrets_manager_v2 import SecretsManagerV2
 from ibm_code_engine_sdk.code_engine_v2 import CodeEngineV2
-from ibm_code_engine_sdk.code_engine_v2 import ReplaceSecretOptions
 from ibm_code_engine_sdk.code_engine_v2 import SecretDataTLSSecretData
 
 app = Flask(__name__)
@@ -49,7 +48,7 @@ class Service:
             tls_key=secret["private_key"]
         )
 
-        options = ReplaceSecretOptions(
+        options = CodeEngineV2.replace_secret(
             project_id=project_id,
             name=ce_secret_name,
             if_match="*",
