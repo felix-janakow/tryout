@@ -32,11 +32,17 @@ class Service:
 
     def get_secret(self, secret_id):
         response = self.sm_client.get_secret(id=secret_id).get_result()
+        
+        # WARNING: This exposes sensitive data - for testing only #Debg
+        logging.info("Complete response from Secrets Manager:")   #DEbg
+        logging.info(json.dumps(response, indent=2))              #DEbg
+        
         if response.get("secret_type") == "public_cert":
             cert_data = response
             logging.info("Fetched secret from Secrets Manager")
             return cert_data
         else:
+            logging.error(f"Unsupported secret type: {response.get('secret_type', 'unknown')}") #DEbg
             raise Exception("Unsupported secret type or empty response")
 
     def update_secret_in_cluster(self, secret):
