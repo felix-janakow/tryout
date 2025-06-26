@@ -32,8 +32,8 @@ class Service:
 
     def get_secret(self, secret_id):
         response = self.sm_client.get_secret(id=secret_id).get_result()
-        if response.get("resources") and response["resources"][0]["secret_type"] == "public_cert":
-            cert_data = response["resources"][0]
+        if response.get("secret_type") == "public_cert":
+            cert_data = response
             logging.info("Fetched secret from Secrets Manager")
             return cert_data
         else:
