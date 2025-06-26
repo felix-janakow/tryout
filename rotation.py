@@ -33,16 +33,16 @@ class Service:
     def get_secret(self, secret_id):
         response = self.sm_client.get_secret(id=secret_id).get_result()
         
-        # WARNING: This exposes sensitive data - for testing only #Debg
-        logging.info("Complete response from Secrets Manager:")   #DEbg
-        logging.info(json.dumps(response, indent=2))              #DEbg
+        # WARNING: This exposes sensitive data - for testing only #DebugLog
+        #logging.info("Complete response from Secrets Manager:")   #DebugLog
+        #logging.info(json.dumps(response, indent=2))              #DebugLog
         
         if response.get("secret_type") == "public_cert":
             cert_data = response
             logging.info("Fetched secret from Secrets Manager")
             return cert_data
         else:
-            logging.error(f"Unsupported secret type: {response.get('secret_type', 'unknown')}") #DEbg
+            #logging.error(f"Unsupported secret type: {response.get('secret_type', 'unknown')}") #DebugLog
             raise Exception("Unsupported secret type or empty response")
 
     def update_secret_in_cluster(self, secret):
@@ -97,7 +97,7 @@ class Service:
 def handle_notification():
     logging.info("Received notification")
     payload = request.get_json()
-    logging.info("Payload: %s", json.dumps(payload, indent=2)) ## Debugging line to log the payload
+    #logging.info("Payload: %s", json.dumps(payload, indent=2)) #DebugLog
 
     try:
         secret_id = payload["data"]["secrets"][0]["secret_id"]
