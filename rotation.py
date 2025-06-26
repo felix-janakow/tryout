@@ -49,15 +49,32 @@ class Service:
         project_id = os.getenv("CE_PROJECT_ID")
         ce_secret_name = os.getenv("CE_SECRET")
         
-        # Extract certificate components from the secret data
-        certificate = secret.get("payload_data", {}).get("certificate", "")
-        private_key = secret.get("payload_data", {}).get("private_key", "")
-        intermediate = secret.get("payload_data", {}).get("intermediate", "")
+        # Log the structure of the secret
+        logging.info(f"Keys in secret object: {list(secret.keys())}")
+        
+        # Extract certificate components directly from the secret object
+        certificate = secret.get("certificate", "")
+        private_key = secret.get("private_key", "")
+        intermediate = secret.get("intermediate", "")
+        
+        # Check if we found the data
+        logging.info(f"Certificate found: {bool(certificate)}")
+        logging.info(f"Private key found: {bool(private_key)}")
+        logging.info(f"Intermediate found: {bool(intermediate)}")
+        
+        if not certificate:
+            logging.error("Certificate not found in the response")
+            raise ValueError("Certificate not found in the response")
+        
+        if not private_key:
+            logging.error("Private key not found in the response")
+            raise ValueError("Private key not found in the response")
         
         # Combine certificate with intermediate certificate chain if available
         full_certificate = certificate
         if intermediate:
             full_certificate = f"{certificate}\n{intermediate}"
+            logging.info("Combined certificate with intermediate certificate")
         
         logging.info("Preparing certificate with chain for Code Engine")
         
@@ -66,7 +83,6 @@ class Service:
             tls_key=private_key
         )
 
-        # Fix the replace_secret call - don't call it twice
         self.ce_client.replace_secret(
             project_id=project_id,
             name=ce_secret_name,
