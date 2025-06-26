@@ -42,21 +42,32 @@ class Service:
     def update_secret_in_cluster(self, secret):
         project_id = os.getenv("CE_PROJECT_ID")
         ce_secret_name = os.getenv("CE_SECRET")
-
+        
+        # Extract certificate components from the secret data
+        certificate = secret.get("payload_data", {}).get("certificate", "")
+        private_key = secret.get("payload_data", {}).get("private_key", "")
+        intermediate = secret.get("payload_data", {}).get("intermediate", "")
+        
+        # Combine certificate with intermediate certificate chain if available
+        full_certificate = certificate
+        if intermediate:
+            full_certificate = f"{certificate}\n{intermediate}"
+        
+        logging.info("Preparing certificate with chain for Code Engine")
+        
         tls_data = SecretDataTLSSecretData(
-            tls_cert=secret["certificate"],
-            tls_key=secret["private_key"]
+            tls_cert=full_certificate,
+            tls_key=private_key
         )
 
-        options = self.ce_client.replace_secret(
+        # Fix the replace_secret call - don't call it twice
+        self.ce_client.replace_secret(
             project_id=project_id,
             name=ce_secret_name,
             if_match="*",
             format="tls",
             data=tls_data
         )
-
-        self.ce_client.replace_secret(options)
         logging.info("Secret updated in Code Engine")
 
 
