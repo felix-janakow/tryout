@@ -32,7 +32,7 @@ class Service:
 
     def get_secret(self, secret_id):
         response = self.sm_client.get_secret(id=secret_id).get_result()
-        if response.get("resources") and response["resources"][0]["secret_type"] == "imported_cert":
+        if response.get("resources") and response["resources"][0]["secret_type"] == "public_cert":
             cert_data = response["resources"][0]
             logging.info("Fetched secret from Secrets Manager")
             return cert_data
@@ -64,7 +64,6 @@ class Service:
 def handle_notification():
     logging.info("Received notification")
     payload = request.get_json()
-    logging.info("Payload: %s", json.dumps(payload, indent=2)) ## Debugging line to log the payload
 
     try:
         secret_id = payload["data"]["secrets"][0]["secret_id"]
