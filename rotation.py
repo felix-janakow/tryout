@@ -63,8 +63,8 @@ class Service:
 @app.route("/", methods=["POST"])
 def handle_notification():
     logging.info("Received notification")
-    logging.info("Payload: %s", json.dumps(payload, indent=2)) ## Debugging line to log the payload
     payload = request.get_json()
+    logging.info("Payload: %s", json.dumps(payload, indent=2)) ## Debugging line to log the payload
 
     try:
         secret_id = payload["data"]["secrets"][0]["secret_id"]
