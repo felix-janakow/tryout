@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.INFO)
 class Service:
     def __init__(self):
         #self.authenticator = IAMAuthenticator(os.getenv("IAM_API_KEY"))
-        self.authenticator = ContainerAuthenticator(iam_profile_name="access_ce_project_vs_sm")
+        self.authenticator = ContainerAuthenticator(iam_profile_name=(os.getenv("TRUSTED_PROFILE_NAME")))
         self.sm_client = self._init_sm_client()
         self.ce_client = self._init_ce_client()
 
@@ -34,7 +34,7 @@ class Service:
     def get_secret(self, secret_id):
         response = self.sm_client.get_secret(id=secret_id).get_result()
         
-        #WARNING: This exposes sensitive data - for testing only   #DebugLog
+        # WARNING: This exposes sensitive data - for testing only #DebugLog
         #logging.info("Complete response from Secrets Manager:")   #DebugLog
         #logging.info(json.dumps(response, indent=2))              #DebugLog
         
