@@ -32,7 +32,7 @@ class Service:
         return client
 
     def get_secret(self, secret_id):
-        response = self.sm_client.get_secret(id=secret_id).get_result()
+        response = self.authenticator.authenticate(self.sm_client.get_secret(id=secret_id).get_result())
         
         # WARNING: This exposes sensitive data - for testing only #DebugLog
         #logging.info("Complete response from Secrets Manager:")   #DebugLog
@@ -84,13 +84,13 @@ class Service:
             tls_key=private_key
         )
 
-        self.ce_client.replace_secret(
+        self.authenticator.authenticate(self.ce_client.replace_secret(
             project_id=project_id,
             name=ce_secret_name,
             if_match="*",
             format="tls",
             data=tls_data
-        )
+        ))
         logging.info("Secret updated in Code Engine")
 
 
