@@ -1,5 +1,4 @@
 import os
-import json
 import logging
 from flask import Flask, request, jsonify
 from ibm_cloud_sdk_core.authenticators import IAMAuthenticator, ContainerAuthenticator
@@ -12,17 +11,13 @@ logging.basicConfig(level=logging.INFO)
 
 class Service:
     def __init__(self):
-        # Check if required environment variables are set
-        trusted_profile_name = os.getenv("TRUSTED_PROFILE_NAME")
-        iam_api_key = os.getenv("IAM_API_KEY")
         
-        if trusted_profile_name:
-            logging.info(f"Using trusted profile: {trusted_profile_name}")
-            try:
-                self.authenticator = ContainerAuthenticator(iam_profile_name=trusted_profile_name)
-                logging.info("ContainerAuthenticator created successfully")
-            except Exception as e:
-                logging.error(f"Failed to create ContainerAuthenticator: {str(e)}")
+        trusted_profile_name = os.getenv("TRUSTED_PROFILE_NAME")
+        self.authenticator = ContainerAuthenticator(iam_profile_name=trusted_profile_name)
+        logging.info("ContainerAuthenticator created successfully")
+        
+        # Uncomment the following line to use IAMAuthenticator (with API KEY) instead and comment out the 3 lines above
+        # self.authenticator = IAMAuthenticator(os.getenv("IAM_API_KEY"))
         
         self.sm_client = self._init_sm_client()
         self.ce_client = self._init_ce_client()
@@ -44,7 +39,7 @@ class Service:
     def get_secret(self, secret_id):
         response = self.sm_client.get_secret(id=secret_id).get_result()
         
-        # WARNING: This exposes sensitive data - for testing only #DebugLog
+        #WARNING: This exposes sensitive data. For testing only!   #DebugLog
         #logging.info("Complete response from Secrets Manager:")   #DebugLog
         #logging.info(json.dumps(response, indent=2))              #DebugLog
         
