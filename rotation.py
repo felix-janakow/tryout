@@ -12,8 +12,18 @@ logging.basicConfig(level=logging.INFO)
 
 class Service:
     def __init__(self):
-        #self.authenticator = IAMAuthenticator(os.getenv("IAM_API_KEY"))
-        self.authenticator = ContainerAuthenticator(iam_profile_name=(os.getenv("TRUSTED_PROFILE_NAME")))
+        # Check if required environment variables are set
+        trusted_profile_name = os.getenv("TRUSTED_PROFILE_NAME")
+        iam_api_key = os.getenv("IAM_API_KEY")
+        
+        if trusted_profile_name:
+            logging.info(f"Using trusted profile: {trusted_profile_name}")
+            try:
+                self.authenticator = ContainerAuthenticator(iam_profile_name=trusted_profile_name)
+                logging.info("ContainerAuthenticator created successfully")
+            except Exception as e:
+                logging.error(f"Failed to create ContainerAuthenticator: {str(e)}")
+        
         self.sm_client = self._init_sm_client()
         self.ce_client = self._init_ce_client()
 
@@ -32,7 +42,7 @@ class Service:
         return client
 
     def get_secret(self, secret_id):
-        response = self.authenticator.authenticate(self.sm_client.get_secret(id=secret_id).get_result())
+        response = self.sm_client.get_secret(id=secret_id).get_result()
         
         # WARNING: This exposes sensitive data - for testing only #DebugLog
         #logging.info("Complete response from Secrets Manager:")   #DebugLog
@@ -84,13 +94,13 @@ class Service:
             tls_key=private_key
         )
 
-        self.authenticator.authenticate(self.ce_client.replace_secret(
+        self.ce_client.replace_secret(
             project_id=project_id,
             name=ce_secret_name,
             if_match="*",
             format="tls",
             data=tls_data
-        ))
+        )
         logging.info("Secret updated in Code Engine")
 
 
