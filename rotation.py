@@ -2,7 +2,7 @@ import os
 import json
 import logging
 from flask import Flask, request, jsonify
-from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
+from ibm_cloud_sdk_core.authenticators import IAMAuthenticator, ContainerAuthenticator
 from ibm_secrets_manager_sdk.secrets_manager_v2 import SecretsManagerV2
 from ibm_code_engine_sdk.code_engine_v2 import CodeEngineV2
 from ibm_code_engine_sdk.code_engine_v2 import SecretDataTLSSecretData
@@ -12,7 +12,8 @@ logging.basicConfig(level=logging.INFO)
 
 class Service:
     def __init__(self):
-        self.authenticator = IAMAuthenticator(os.getenv("IAM_API_KEY"))
+        #self.authenticator = IAMAuthenticator(os.getenv("IAM_API_KEY"))
+        self.authenticator = ContainerAuthenticator(iam_profile_name="access_ce_project_vs_sm")
         self.sm_client = self._init_sm_client()
         self.ce_client = self._init_ce_client()
 
@@ -33,7 +34,7 @@ class Service:
     def get_secret(self, secret_id):
         response = self.sm_client.get_secret(id=secret_id).get_result()
         
-        # WARNING: This exposes sensitive data - for testing only #DebugLog
+        #WARNING: This exposes sensitive data - for testing only   #DebugLog
         #logging.info("Complete response from Secrets Manager:")   #DebugLog
         #logging.info(json.dumps(response, indent=2))              #DebugLog
         
