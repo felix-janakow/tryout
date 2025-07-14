@@ -1,5 +1,6 @@
 import os
 import logging
+import time
 from flask import Flask, abort, request, jsonify
 from ibm_cloud_sdk_core.authenticators import IAMAuthenticator, ContainerAuthenticator
 from ibm_secrets_manager_sdk.secrets_manager_v2 import SecretsManagerV2
@@ -105,6 +106,9 @@ class Service:
             data=tls_data
         )
         logging.info("Secret updated in Code Engine")
+        
+        # Add delay after successful update to prevent race conditions with subsequent requests
+        time.sleep(2)
 
 
 @app.route("/", methods=["POST"])
