@@ -100,7 +100,6 @@ class Service:
         self.ce_client.replace_secret(
             project_id=project_id,
             name=ce_secret_name,
-            if_match="*",
             format="tls",
             data=tls_data
         )
