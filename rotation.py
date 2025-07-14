@@ -1,6 +1,6 @@
 import os
 import logging
-from flask import Flask, request, jsonify
+from flask import Flask, abort, request, jsonify
 from ibm_cloud_sdk_core.authenticators import IAMAuthenticator, ContainerAuthenticator
 from ibm_secrets_manager_sdk.secrets_manager_v2 import SecretsManagerV2
 from ibm_code_engine_sdk.code_engine_v2 import CodeEngineV2
@@ -16,7 +16,9 @@ class Service:
         self.authenticator = ContainerAuthenticator(iam_profile_name=trusted_profile_name)
         logging.info("ContainerAuthenticator created successfully")
         
+        # ===================== other Authenticatio Option (not recommended) =====================
         # Uncomment the following line to use IAMAuthenticator (with API KEY) instead and comment out the 3 lines above
+
         # self.authenticator = IAMAuthenticator(os.getenv("IAM_API_KEY"))
         
         self.sm_client = self._init_sm_client()
@@ -39,17 +41,23 @@ class Service:
     def get_secret(self, secret_id):
         response = self.sm_client.get_secret(id=secret_id).get_result()
         
-        #WARNING: This exposes sensitive data. For testing only!   #DebugLog
-        #logging.info("Complete response from Secrets Manager:")   #DebugLog
-        #logging.info(json.dumps(response, indent=2))              #DebugLog
+        # ===================== Debug Logs =====================
+        #WARNING: This exposes sensitive data. For testing only!
+
+        #logging.info("Complete response from Secrets Manager:")   
+        #logging.info(json.dumps(response, indent=2))              
         
         if response.get("secret_type") == "public_cert":
             cert_data = response
             logging.info("Fetched secret from Secrets Manager")
             return cert_data
         else:
-            #logging.error(f"Unsupported secret type: {response.get('secret_type', 'unknown')}") #DebugLog
             raise Exception("Unsupported secret type or empty response")
+
+            # ===================== Debug Logs =====================
+            #WARNING: This exposes sensitive data. For testing only!
+
+            #logging.error(f"Unsupported secret type: {response.get('secret_type', 'unknown')}") #DebugLog
 
     def update_secret_in_cluster(self, secret):
         project_id = os.getenv("CE_PROJECT_ID")
@@ -101,8 +109,21 @@ class Service:
 
 @app.route("/", methods=["POST"])
 def handle_notification():
+    
+    # Check for the required authentication header
+    expected_header_name = "Auth-SM-TLS-Sync"
+    expected_header_value = "SM-TLS-Sync-Header-Verify"
+    
+    received_value = request.headers.get(expected_header_name)
+    
+    if received_value != expected_header_value:
+        abort(403, "Forbidden: Invalid or missing authentication header")
+
     logging.info("Received notification")
     payload = request.get_json()
+
+    # ===================== Debug Logs =====================
+    #WARNING: This exposes sensitive data. For testing only!
     #logging.info("Payload: %s", json.dumps(payload, indent=2)) #DebugLog
 
     try:
