@@ -100,6 +100,7 @@ class Service:
         self.ce_client.replace_secret(
             project_id=project_id,
             name=ce_secret_name,
+            if_match="*",
             format="tls",
             data=tls_data
         )
@@ -116,7 +117,7 @@ def handle_notification():
     received_value = request.headers.get(expected_header_name)
     
     if received_value != expected_header_value:
-        abort(403, "Forbidden: Invalid or missing authentication header")
+        abort(403, "Forbidden: Invalid or missing authentication head   er")
 
     logging.info("Received notification")
     payload = request.get_json()
